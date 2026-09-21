@@ -48,6 +48,8 @@
   .it input[type=text] { border:1px solid var(--line); border-radius:8px; padding:10px; font-size:14px; background:#fff; color:#1c1c1c; }
   .it .nm { flex:1; min-width:0; }
   .it .pr { width:90px; }
+  .it { flex-wrap:wrap; }
+  .it .ds { flex:1 1 100%; border:1px solid var(--line); border-radius:8px; padding:8px; font-size:13px; background:#fff; color:#1c1c1c; font-family:inherit; resize:vertical; }
   .tog { border:none; border-radius:8px; padding:10px 12px; font-size:13px; font-weight:700; cursor:pointer; min-width:74px; }
   .tog.on { background:var(--green); color:#fff; } .tog.offb { background:#3d3128; color:var(--txt); }
   .add { border:2px dashed var(--green); background:#e8f3fd; color:var(--green-d); border-radius:10px; padding:12px; width:100%; font-size:15px; font-weight:700; cursor:pointer; margin:6px 0 4px; }
@@ -95,7 +97,7 @@
 <main>
   <section class="tab on" id="t-o"><div id="orders"></div></section>
   <section class="tab" id="t-c">
-    <div class="hint">Toca el nombre o el precio para cambiarlo. Usa el botón verde/gris para mostrar u ocultar un producto en la app de los clientes. <b>No olvides guardar.</b></div>
+    <div class="hint">Toca el nombre o el precio para cambiarlo. Toca la descripción para editar el “qué trae” que ven los clientes al abrir el detalle. Usa el botón verde/gris para mostrar u ocultar un producto en la app de los clientes. <b>No olvides guardar.</b></div>
     <div class="zelle-card" style="border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px">
       <div style="font-weight:800;margin-bottom:6px">📱 Zelle de la tienda</div>
       <div style="font-size:13px;color:var(--mut);margin-bottom:8px">Los clientes que paguen con Zelle verán este dato <b>después</b> de confirmar su pedido.</div>
@@ -271,6 +273,7 @@ function renderCatEdit() {
           <input type="text" class="nm" value="${esc(it.name)}" data-d="${di}" data-c="${ci}" data-i="${ii}" data-f="name">
           <input type="text" class="pr" inputmode="decimal" value="${it.price}" data-d="${di}" data-c="${ci}" data-i="${ii}" data-f="price">
           <button class="tog ${it.active ? "on" : "offb"}" onclick="toggleItem(${di},${ci},${ii})">${it.active ? "Activo" : "Oculto"}</button>
+          <textarea class="ds" rows="2" placeholder="Descripción / qué trae…" data-d="${di}" data-c="${ci}" data-i="${ii}" data-f="desc">${esc(it.desc || "")}</textarea>
         </div>`).join("")}
       <button class="add" onclick="addItem(${di},${ci})">+ Agregar producto en ${esc(c.name)}</button>
     `).join("")}
@@ -294,11 +297,12 @@ function addCategory(di) {
 }
 async function saveCatalog() {
   // leer valores editados de los inputs
-  document.querySelectorAll("#catedit input").forEach(el => {
+  document.querySelectorAll("#catedit input, #catedit textarea").forEach(el => {
     const { d, c, i, f } = el.dataset;
     const it = catalog.departments[+d].categories[+c].items[+i];
     if (f === "name") it.name = el.value.trim() || it.name;
     if (f === "price") { const p = parseFloat(el.value); if (!isNaN(p) && p >= 0) it.price = Math.round(p * 100) / 100; }
+    if (f === "desc") it.desc = el.value.trim();
   });
   const r = await fetch("/api/catalog", { method: "PUT", headers: authHeaders({ "Content-Type": "application/json" }), body: JSON.stringify(catalog) });
   if (r.status === 401) { needKey(); alert("🔒 Escribe la clave de la tienda primero."); return; }
