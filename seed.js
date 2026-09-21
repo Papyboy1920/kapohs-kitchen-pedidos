@@ -7,7 +7,7 @@
 // CATALOG_VERSION: subir para re-sembrar en el servidor.
 // ============================================================
 
-const CATALOG_VERSION = 1;
+const CATALOG_VERSION = 2;
 
 const SEED_CATALOG = {
   departments: [
@@ -78,6 +78,34 @@ const SEED_CATALOG = {
             { id: "agua", name: "Agua", price: 2.00, unit: "botella", active: true,
               pending: true, note: "Precio sugerido — el dueño confirma",
               desc: "Agua pura y refrescante." }
+          ]
+        }
+      ]
+    },
+    {
+      id: "merch",
+      name: "Merch Kapohs",
+      icon: "👕",
+      categories: [
+        {
+          id: "merch-todo",
+          name: "Viste la marca",
+          items: [
+            { id: "tee-s", name: "Camiseta Kapohs — Talla S", price: 25.00, unit: "camiseta", active: true,
+              pending: true, note: "Precio sugerido — el dueño confirma",
+              desc: "Camiseta oficial de Kapohs Kitchen, talla S." },
+            { id: "tee-m", name: "Camiseta Kapohs — Talla M", price: 25.00, unit: "camiseta", active: true,
+              pending: true, note: "Precio sugerido — el dueño confirma",
+              desc: "Camiseta oficial de Kapohs Kitchen, talla M." },
+            { id: "tee-l", name: "Camiseta Kapohs — Talla L", price: 25.00, unit: "camiseta", active: true,
+              pending: true, note: "Precio sugerido — el dueño confirma",
+              desc: "Camiseta oficial de Kapohs Kitchen, talla L." },
+            { id: "tee-xl", name: "Camiseta Kapohs — Talla XL", price: 25.00, unit: "camiseta", active: true,
+              pending: true, note: "Precio sugerido — el dueño confirma",
+              desc: "Camiseta oficial de Kapohs Kitchen, talla XL." },
+            { id: "tee-conciencia", name: "Camiseta Edición Conciencia", price: 28.00, unit: "camiseta", active: true,
+              pending: true, note: "Precio sugerido — el dueño confirma",
+              desc: "Edición especial de concientización — indica tu talla en las notas del pedido." }
           ]
         }
       ]
