@@ -1,8 +1,6 @@
 # Render Blueprint — Kapohs Kitchen
 # Despliegue con 1 clic desde el dashboard de Render (New > Blueprint).
-# Crea el servicio web con plan gratuito.
-# NOTA: usa SQLite en el disco efímero de Render — SOLO para demo/arranque.
-# Un lanzamiento real requiere Postgres pago (ver README).
+# Crea el servicio web + Postgres gratis.
 services:
   - type: web
     name: kapohs-kitchen-pedidos
@@ -12,7 +10,18 @@ services:
     startCommand: node server.js
     healthCheckPath: /api/catalog
     envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kapohs-kitchen-db
+          property: connectionString
       - key: STORE_KEY
         generateValue: true
         # Render genera una clave aleatoria. Cópiala del dashboard
         # (Environment) y pégala en /tienda para entrar.
+
+databases:
+  - name: kapohs-kitchen-db
+    plan: free
+    # Postgres gratis en Render: 1 GB de almacenamiento.
+    # Guarda pedidos, catálogo y el Zelle de la tienda de forma
+    # permanente: sobrevive a redeploys (SQLite en disco efímero no).
