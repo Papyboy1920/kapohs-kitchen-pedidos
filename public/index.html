@@ -79,6 +79,26 @@
   .note-box { background:var(--soft); border:1px solid var(--line); border-radius:10px; padding:12px; font-size:13px; margin-top:14px; text-align:left; }
   .err { background:#fdecea; color:#a31212; border-radius:10px; padding:12px; margin-bottom:12px; font-size:14px; display:none; }
   .seed-tag { font-size:11px; color:var(--mut); background:var(--soft); border:1px dashed var(--line); border-radius:8px; padding:8px 10px; margin-top:14px; }
+  .item-main { cursor:pointer; }
+  .item-main:active { opacity:.85; }
+  .dtap { font-size:11px; color:var(--mut); margin-top:6px; }
+  /* ---- Modal de detalle del producto ---- */
+  .d-ov { position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:90; display:none; align-items:flex-end; justify-content:center; }
+  .d-ov.on { display:flex; }
+  .d-card { background:var(--card); border:1.5px solid var(--line); border-bottom:none; border-radius:20px 20px 0 0; width:100%; max-width:520px; max-height:92vh; overflow-y:auto; animation:dsheet .22s ease-out; }
+  @keyframes dsheet { from { transform:translateY(40px); opacity:.4; } to { transform:none; opacity:1; } }
+  .d-img { width:100%; height:230px; object-fit:cover; border-radius:20px 20px 0 0; display:block; }
+  .d-body { padding:16px 18px 22px; position:relative; }
+  .d-close { position:absolute; top:-46px; right:12px; width:36px; height:36px; border-radius:50%; border:none; background:rgba(0,0,0,.55); color:#fff; font-size:17px; cursor:pointer; }
+  .d-name { font-size:21px; font-weight:800; margin:4px 0; }
+  .d-price { font-size:19px; font-weight:800; color:var(--gold,#f5c518); margin-bottom:6px; }
+  .d-sec { margin-top:12px; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:var(--mut); font-weight:700; }
+  .d-desc { font-size:15px; line-height:1.6; margin-top:6px; }
+  .d-qtyrow { display:flex; align-items:center; gap:16px; margin:16px 0 10px; }
+  .d-qtyrow button { width:46px; height:46px; border-radius:50%; border:1.5px solid var(--line); background:var(--bg,#111); color:#fff; font-size:22px; cursor:pointer; }
+  .d-qty { font-size:22px; font-weight:800; min-width:30px; text-align:center; }
+  .d-note { width:100%; box-sizing:border-box; margin:4px 0 12px; padding:10px; border-radius:10px; border:1.5px solid var(--line); background:var(--bg,#111); color:#fff; font-size:14px; }
+  .d-add { width:100%; padding:15px; border:none; border-radius:14px; font-size:17px; font-weight:800; cursor:pointer; background:linear-gradient(135deg,#e63946,#b91c1c); color:#fff; }
 </style>
 </head>
 <body>
@@ -265,11 +285,14 @@ function renderItems() {
   $("items").innerHTML = curCat.items.filter(i => i.active).map(it => {
     const c = cart[it.id] || { qty: 0, note: "" };
     return `<div class="item">
+      <div class="item-main" onclick="openDetail('${it.id}')">
       ${it.image ? `<img class="item-img" src="images/${esc(it.image)}" alt="${esc(it.name)}" loading="lazy">` : ""}
       <div class="row1"><div class="nm">${esc(it.name)}</div><div class="pr">${fmt(it.price)} <small>/${esc(it.unit)}</small></div></div>
       ${it.tag ? `<div><span class="tag">${esc(it.tag)}</span></div>` : ""}
       ${it.pending ? `<div><span class="tag pending">⚠️ ${esc(it.note || "Precio por confirmar")}</span></div>` : ""}
       ${it.desc ? `<div class="desc">${esc(it.desc)}</div>` : ""}
+      <div class="dtap">Toca para ver detalle 👆</div>
+      </div>
       <div class="qty">
         <button onclick="chQty('${it.id}',-1)">−</button>
         <div class="n">${c.qty}</div>
@@ -409,6 +432,59 @@ async function submitOrder() {
   }
 }
 load();
+</script>
+<!-- Modal de detalle del producto -->
+<div class="d-ov" id="d-ov" onclick="if(event.target===this)closeDetail()">
+  <div class="d-card">
+    <div class="d-body">
+      <button class="d-close" onclick="closeDetail()">✕</button>
+      <img class="d-img" id="d-img" alt="">
+      <div id="d-tag"></div>
+      <div class="d-name" id="d-name"></div>
+      <div class="d-price" id="d-price"></div>
+      <div id="d-pend"></div>
+      <div class="d-sec">Qué trae</div>
+      <div class="d-desc" id="d-desc"></div>
+      <div class="d-qtyrow">
+        <button onclick="dQty(-1)">−</button>
+        <div class="d-qty" id="d-qty">0</div>
+        <button onclick="dQty(1)">+</button>
+      </div>
+      <input class="d-note" id="d-note" placeholder="Nota (opcional)" oninput="dNote(this.value)">
+      <button class="d-add" onclick="closeDetail()">Agregar al pedido ✓</button>
+    </div>
+  </div>
+</div>
+<script>
+let detailId = null;
+function openDetail(id) {
+  const it = findItem(id); if (!it) return;
+  detailId = id;
+  const img = $("d-img");
+  if (it.image) { img.src = "images/" + it.image; img.style.display = "block"; }
+  else img.style.display = "none";
+  $("d-tag").innerHTML = it.tag ? `<div><span class="tag">${esc(it.tag)}</span></div>` : "";
+  $("d-name").textContent = it.name;
+  $("d-price").innerHTML = fmt(it.price) + " <small>/" + esc(it.unit) + "</small>";
+  $("d-pend").innerHTML = it.pending ? `<div><span class="tag pending">⚠️ ${esc(it.note || "Precio por confirmar")}</span></div>` : "";
+  $("d-desc").textContent = it.desc || "Pregunta en la tienda por los detalles de este producto.";
+  refreshDetail();
+  $("d-ov").classList.add("on");
+  document.body.style.overflow = "hidden";
+}
+function refreshDetail() {
+  const c = cart[detailId] || { qty: 0, note: "" };
+  $("d-qty").textContent = c.qty;
+  if ($("d-note").value !== (c.note || "")) $("d-note").value = c.note || "";
+}
+function dQty(d) { if (!detailId) return; chQty(detailId, d); refreshDetail(); }
+function dNote(v) { if (detailId && cart[detailId]) cart[detailId].note = v; }
+function closeDetail() {
+  detailId = null;
+  $("d-ov").classList.remove("on");
+  document.body.style.overflow = "";
+  renderItems(); updateBar();
+}
 </script>
 </body>
 </html>
