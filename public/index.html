@@ -97,11 +97,8 @@
   <section class="step on" id="s1">
     <h2>¿Cómo quieres tu pedido?</h2>
     <div class="opt2">
-      <div class="type-card" id="tc-delivery" onclick="setType('delivery')">
-        <div class="ic">🛵</div><div class="t">Delivery</div><div class="s">Lo llevamos a tu puerta</div>
-      </div>
-      <div class="type-card" id="tc-pickup" onclick="setType('pickup')">
-        <div class="ic">🏪</div><div class="t">Recoger en el pop-up</div><div class="s">Pasas a buscarlo al evento</div>
+      <div class="type-card sel" id="tc-pickup" onclick="setType('pickup')">
+        <div class="ic">🏪</div><div class="t">Recoger</div><div class="s">Pasas a buscar tu pedido</div>
       </div>
     </div>
   </section>
@@ -190,7 +187,7 @@
 <script>
 let catalog = null;
 let step = 1;
-let orderType = null, payMethod = null;
+let orderType = "pickup", payMethod = null;
 let zelleHandle = "";  // se carga de /api/settings; solo se muestra después del checkout
 let cart = {};           // itemId -> {qty, note}
 let curDept = null, curCat = null;
@@ -217,10 +214,9 @@ function go(n) {
   if (n === 5) renderReview();
 }
 function setType(t) {
-  orderType = t;
-  $("tc-delivery").classList.toggle("sel", t === "delivery");
-  $("tc-pickup").classList.toggle("sel", t === "pickup");
-  $("addr-wrap").style.display = t === "delivery" ? "block" : "none";
+  orderType = "pickup";
+  $("tc-pickup").classList.add("sel");
+  $("addr-wrap").style.display = "none";
   setTimeout(() => go(2), 220);
 }
 function setPay(p) {
@@ -333,7 +329,7 @@ function barNext() {
     const name = $("f-name").value.trim(), phone = $("f-phone").value.trim(), addr = $("f-addr").value.trim();
     const e = $("e3");
     if (!name || !phone) { e.style.display = "block"; e.textContent = "Escribe tu nombre y tu teléfono."; return; }
-    if (orderType === "delivery" && !addr) { e.style.display = "block"; e.textContent = "Escribe tu dirección de entrega."; return; }
+    
     e.style.display = "none";
     go(4);
   }
@@ -349,7 +345,7 @@ function renderReview() {
   const isZelle = payMethod === "transfer";
   if (lines.length === 0) {
     $("review").innerHTML =
-      `<div class="ln"><span><b>${orderType === "delivery" ? "🛵 Delivery" : "🏪 Recoger en el pop-up"}</b></span><span>${payMethod === "cash" ? "💵 Efectivo" : "📱 Zelle"}</span></div>` +
+      `<div class="ln"><span><b>🏪 Recoger</b></span><span>${payMethod === "cash" ? "💵 Efectivo" : "📱 Zelle"}</span></div>` +
       `<div style="text-align:center;padding:26px 12px">` +
       `<div style="font-size:44px">🔥</div>` +
       `<div style="font-weight:700;font-size:16px;margin:8px 0 4px">Tu carrito está vacío</div>` +
@@ -366,7 +362,7 @@ function renderReview() {
       <div class="zp-note">Después de pagar, toca el botón para enviar tu pedido.</div>
     </div>` : "";
   $("review").innerHTML =
-    `<div class="ln"><span><b>${orderType === "delivery" ? "🛵 Delivery" : "🏪 Recoger en el pop-up"}</b></span><span>${payMethod === "cash" ? "💵 Efectivo" : "📱 Zelle"}</span></div>` +
+    `<div class="ln"><span><b>🏪 Recoger</b></span><span>${payMethod === "cash" ? "💵 Efectivo" : "📱 Zelle"}</span></div>` +
     zBox +
     lines.map(l => `<div class="ln rev-ln"><span class="rev-info"><span class="nm">${esc(l.name)}</span>${l.note ? `<br><small style="color:#6b6b6b">📝 ${esc(l.note)}</small>` : ""}</span><span class="rev-step"><button onclick="revQty('${l.itemId}',-1)" aria-label="Quitar uno">−</button><span class="n">${l.qty}</span><button onclick="revQty('${l.itemId}',1)" aria-label="Agregar uno">+</button><button class="rev-del" onclick="revDel('${l.itemId}')" title="Quitar del pedido">🗑️</button></span><span class="rev-sub">${fmt(l.subtotal)}</span></div>`).join("") +
     `<div class="tot"><span>Total</span><span>${fmt(cartTotal())}</span></div>
@@ -400,9 +396,7 @@ async function submitOrder() {
     } else {
       $("ok-title").textContent = "¡Pedido recibido!";
       $("ok-pend").style.display = "none";
-      $("ok-next").textContent = orderType === "delivery"
-        ? "Pagas en efectivo al recibir."
-        : "Pagas en efectivo al recoger.";
+      $("ok-next").textContent = "Pagas en efectivo al recoger.";
     }
     $("ok-sum").innerHTML = order.items.map(l =>
       `<div class="ln"><span><span class="q">${l.qty} ×</span> ${esc(l.name)}</span><span>${fmt(l.subtotal)}</span></div>`).join("") +
