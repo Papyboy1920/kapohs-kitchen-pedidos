@@ -133,6 +133,13 @@ const PAY_ES = { cash:"💵 Efectivo", transfer:"📱 Zelle" };
 let orders = [];
 let catalog = null;
 let audioCtx = null;
+// Los navegadores silencian el audio hasta que el usuario toca la pantalla: el primer toque lo desbloquea
+document.addEventListener("pointerdown", function unlockAudio() {
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === "suspended") audioCtx.resume();
+  } catch (e) {}
+}, { passive: true });
 
 function showTab(t) {
   $("t-o").classList.toggle("on", t === "o");
@@ -225,6 +232,7 @@ function upsert(o) {
 function beep() {
   try {
     audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === "suspended") audioCtx.resume();
     for (let i = 0; i < 3; i++) {
       const o = audioCtx.createOscillator(), g = audioCtx.createGain();
       o.connect(g); g.connect(audioCtx.destination);
