@@ -121,8 +121,8 @@ function findItem(catalog, itemId) {
 app.post("/api/orders", async (req, res) => {
   const { type, items, customer, payment, notes } = req.body || {};
 
-  if (type !== "delivery" && type !== "pickup") {
-    return res.status(400).json({ error: "Tipo de pedido inválido." });
+  if (type !== "pickup") {
+    return res.status(400).json({ error: "Esta tienda solo acepta pedidos para recoger." });
   }
   if (!Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: "El pedido no tiene artículos." });
