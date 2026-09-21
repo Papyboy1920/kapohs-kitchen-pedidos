@@ -45,8 +45,58 @@ const PG_SCHEMA = `
     notes TEXT,
     status TEXT NOT NULL DEFAULT 'nuevo',
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-  );
-`;
+  );`;
+
+// ---------- Fusión de catálogo (nunca destructiva) ----------
+// Fusiona la semilla con el catálogo vivo SIN borrar ni sobrescribir
+// lo que el dueño editó en /tienda:
+// - Conserva intactos los departamentos/categorías/ítems agregados por el dueño.
+// - Agrega los departamentos/categorías/ítems nuevos que trae la semilla.
+// - Rellena solo campos vacíos (desc, img) desde la semilla.
+// - Jamás toca name, price, unit, active ni ningún valor que ya exista.
+function mergeCatalog(live, seed) {
+  const base =
+    live && Array.isArray(live.departments)
+      ? JSON.parse(JSON.stringify(live))
+      : { departments: [] };
+  if (!Array.isArray(base.departments)) base.departments = [];
+  let added = 0;
+  let filled = 0;
+  const byId = (arr, id) => (arr || []).find((x) => x && x.id === id);
+  for (const sDept of (seed && seed.departments) || []) {
+    let d = byId(base.departments, sDept.id);
+    if (!d) {
+      base.departments.push(JSON.parse(JSON.stringify(sDept)));
+      added++;
+      continue;
+    }
+    d.categories = d.categories || [];
+    for (const sCat of sDept.categories || []) {
+      let c = byId(d.categories, sCat.id);
+      if (!c) {
+        d.categories.push(JSON.parse(JSON.stringify(sCat)));
+        added++;
+        continue;
+      }
+      c.items = c.items || [];
+      for (const sItem of sCat.items || []) {
+        const it = byId(c.items, sItem.id);
+        if (!it) {
+          c.items.push(JSON.parse(JSON.stringify(sItem)));
+          added++;
+        } else {
+          for (const f of ["desc", "img"]) {
+            if ((it[f] === undefined || it[f] === null || it[f] === "") && sItem[f]) {
+              it[f] = sItem[f];
+              filled++;
+            }
+          }
+        }
+      }
+    }
+  }
+  return { catalog: base, added, filled };
+}
 
 async function init() {
   if (process.env.DATABASE_URL) {
@@ -69,7 +119,7 @@ async function init() {
     console.log("[kapohs] DB: SQLite local (kapohs-kitchen.db)");
   }
 
-  // Semilla solo si no existe; re-sembrar si sube CATALOG_VERSION
+  // Semilla solo si no existe; al subir CATALOG_VERSION se FUSIONA (nunca se borra).
   if (!(await kvGet("catalog"))) {
     await kvSet("catalog", JSON.stringify(SEED_CATALOG));
     await kvSet("catalog_version", String(CATALOG_VERSION));
@@ -77,9 +127,12 @@ async function init() {
   } else {
     const v = await kvGet("catalog_version");
     if (v !== String(CATALOG_VERSION)) {
-      await kvSet("catalog", JSON.stringify(SEED_CATALOG));
+      let live = null;
+      try { live = JSON.parse(await kvGet("catalog")); } catch { live = null; }
+      const m = mergeCatalog(live, SEED_CATALOG);
+      await kvSet("catalog", JSON.stringify(m.catalog));
       await kvSet("catalog_version", String(CATALOG_VERSION));
-      console.log(`[kapohs] Catálogo re-sembrado (v${v} → v${CATALOG_VERSION}).`);
+      console.log(`[kapohs] Catálogo fusionado (v${v} → v${CATALOG_VERSION}): +${m.added} nuevos, ${m.filled} campos rellenados. Lo del dueño intacto.`);
     }
   }
   if (!(await kvGet("order_seq"))) await kvSet("order_seq", "0");
