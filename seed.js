@@ -7,7 +7,7 @@
 // CATALOG_VERSION: subir para re-sembrar en el servidor.
 // ============================================================
 
-const CATALOG_VERSION = 2;
+const CATALOG_VERSION = 3;
 
 const SEED_CATALOG = {
   departments: [
@@ -103,9 +103,9 @@ const SEED_CATALOG = {
             { id: "tee-xl", name: "Camiseta Kapohs — Talla XL", price: 25.00, unit: "camiseta", active: true,
               pending: true, note: "Precio sugerido — el dueño confirma",
               desc: "Camiseta oficial de Kapohs Kitchen, talla XL." },
-            { id: "tee-conciencia", name: "Camiseta Edición Conciencia", price: 28.00, unit: "camiseta", active: true,
+            { id: "tee-conciencia", name: "Camiseta Edición Conciencia", price: 28.00, unit: "camiseta", active: true, tag: "🎗️ Benéfica", image: "tee-conciencia.jpg",
               pending: true, note: "Precio sugerido — el dueño confirma",
-              desc: "Edición especial de concientización — indica tu talla en las notas del pedido." }
+              desc: "La camiseta oficial 'Beating Cancer, Un Golpe a La Vez' — todo lo recaudado apoya a quienes luchan contra el cáncer de seno. Indica tu talla en las notas del pedido." }
           ]
         }
       ]
