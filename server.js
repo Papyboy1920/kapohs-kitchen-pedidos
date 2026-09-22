@@ -183,6 +183,13 @@ app.post("/api/orders", async (req, res) => {
 });
 
 // Solo tienda:
+// Limpieza total del historial (boton "Limpiar historial" en /tienda).
+app.delete("/api/orders", requireStore, async (req, res) => {
+  await db.deleteAllOrders();
+  broadcast("orders-cleared", {});
+  res.json({ ok: true });
+});
+
 app.get("/api/orders", requireStore, async (req, res) => {
   res.json(await db.listOrders());
 });

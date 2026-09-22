@@ -119,7 +119,8 @@
       </div>
       <div class="h-srow"><span>Estado:</span><select id="h-status" onchange="setHStatus(this.value)"></select></div>
     </div>
-    <div class="h-summary" id="h-summary"></div>
+        <div style="margin:12px 0"><button onclick="clearHistory()" style="background:#b3261e;color:#fff;border:none;border-radius:10px;padding:10px 16px;font-weight:700;font-size:14px;cursor:pointer">🧹 Limpiar historial</button></div>
+<div class="h-summary" id="h-summary"></div>
     <div id="history"></div>
   </section>
 </main>
@@ -178,6 +179,12 @@ async function unlock() {
 }
 
 // ---- pedidos ----
+async function clearHistory() {
+  if (!confirm("\u00bfBorrar TODO el historial de pedidos? No se puede deshacer.")) return;
+  if (!confirm("\u00daltima confirmaci\u00f3n: se borran todos los pedidos y el pr\u00f3ximo pedido vuelve a ser #001.")) return;
+  const r = await fetch("/api/orders", { method: "DELETE", headers: authHeaders() });
+  if (r.ok) loadOrders(); else alert("No se pudo limpiar el historial.");
+}
 async function loadOrders() {
   const r = await fetch("/api/orders", { headers: authHeaders() });
   if (r.status === 401) { needKey(); return; }
@@ -262,6 +269,7 @@ function connectSSE() {
   es.addEventListener("connected", () => { $("conn").textContent = "En vivo · esperando pedidos"; $("dot").classList.remove("off"); });
   es.addEventListener("new-order", e => { const o = JSON.parse(e.data); upsert(o); alertNew(o); });
   es.addEventListener("order-status", e => upsert(JSON.parse(e.data)));
+  es.addEventListener("orders-cleared", () => loadOrders());
   es.onerror = () => { $("conn").textContent = "Sin conexión — reintentando…"; $("dot").classList.add("off"); };
 }
 
