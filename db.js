@@ -131,6 +131,16 @@ async function init() {
       try { live = JSON.parse(await kvGet("catalog")); } catch { live = null; }
       const m = mergeCatalog(live, SEED_CATALOG);
       await kvSet("catalog", JSON.stringify(m.catalog));
+      // Corrección dirigida 2026-09-24: 4 Golpes $19 (sugerido) → $18 (precio real del dueño, publicado en su Cash App).
+      // Idempotente: solo cambia si el precio actual es exactamente el sugerido; lo que el dueño haya puesto jamás se toca.
+      try {
+        const c = JSON.parse(await kvGet("catalog"));
+        let changed = false;
+        for (const dep of (c.departments || [])) for (const it of (dep.items || [])) {
+          if (it.id === "golpe-4" && Number(it.price) === 19) { it.price = 18; changed = true; }
+        }
+        if (changed) { await kvSet("catalog", JSON.stringify(c)); console.log("[kapohs] Precio 4 Golpes corregido: $19 → $18 (precio del dueño)."); }
+      } catch {}
       await kvSet("catalog_version", String(CATALOG_VERSION));
       console.log(`[kapohs] Catálogo fusionado (v${v} → v${CATALOG_VERSION}): +${m.added} nuevos, ${m.filled} campos rellenados. Lo del dueño intacto.`);
     }

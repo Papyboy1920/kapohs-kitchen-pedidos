@@ -3,11 +3,12 @@
 // Dominican pop-up, Kendall / Miami FL. @orderkapohskitchen
 // Menú extraído de las capturas de Instagram del negocio.
 // Precio CONFIRMADO: 1 Golpe $12 (visto en su menú).
+// Precios CONFIRMADOS 2026-09-24: 2 Golpes $14, 3 Golpes $16, 4 Golpes $18 (publicados por el dueño en su Cash App).
 // Todo lo demás lleva precio SUGERIDO — el dueño confirma.
 // CATALOG_VERSION: subir para re-sembrar en el servidor.
 // ============================================================
 
-const CATALOG_VERSION = 4;
+const CATALOG_VERSION = 5;
 
 const SEED_CATALOG = {
   departments: [
@@ -23,13 +24,10 @@ const SEED_CATALOG = {
             { id: "golpe-1", name: "1 Golpe", price: 12.00, unit: "plato", active: true, tag: "⭐ El favorito", image: "golpe-1.jpg",
               desc: "Mangú cremoso (puré de plátano verde) con cebollita encurtida y tu golpe favorito: huevo, queso frito, salami o longaniza." },
             { id: "golpe-2", name: "2 Golpes", price: 14.00, unit: "plato", active: true, image: "golpe-2.jpg",
-              pending: true, note: "Precio sugerido — el dueño confirma",
               desc: "Mangú cremoso con cebollita encurtida y dos golpes a tu elección: huevo, queso frito, salami o longaniza." },
             { id: "golpe-3", name: "3 Golpes", price: 16.00, unit: "plato", active: true, image: "golpe-3.jpg",
-              pending: true, note: "Precio sugerido — el dueño confirma",
               desc: "Mangú cremoso con huevo, queso frito y salami — coronado con cebollita encurtida." },
-            { id: "golpe-4", name: "4 Golpes", price: 19.00, unit: "plato", active: true, tag: "🔥 El de la casa", image: "golpe-4.jpg",
-              pending: true, note: "Precio sugerido — el dueño confirma",
+            { id: "golpe-4", name: "4 Golpes", price: 18.00, unit: "plato", active: true, tag: "🔥 El de la casa", image: "golpe-4.jpg",
               desc: "El completo: mangú con huevo, queso frito, salami Y longaniza. Cuatro golpes, cero piedad." }
           ]
         }
